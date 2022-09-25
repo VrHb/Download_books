@@ -8,6 +8,7 @@ def check_for_redirect(response: str) -> None:
     if response.history:
         raise requests.HTTPError
 
+
 def main() -> None:
     os.makedirs("books", exist_ok=True)
     book_ids = list(range(1, 11))
