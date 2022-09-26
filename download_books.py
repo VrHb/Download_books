@@ -43,17 +43,19 @@ def download_comments(url: str, filename: str, folder: str = "comments/") -> lis
             file.write(f"{comment.find('span').text}\n")
     return comments
 
+
 def get_title_params_from_book(url: str) -> str:
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
     table = soup.find("body").find("table")
     image = soup.find(class_="bookimage").find("img")["src"]
+    genres = soup.find("body").find(class_="ow_px_td").find("span", class_="d_book").find_all("a")
     image_url = urljoin("http://tululu.org/", image) 
     title = table.find("h1")
     splited_title = title.text.split("::")
     book_title = splited_title[0].strip().lstrip("\xa0")
-    return book_title, image_url  # use named tuple
+    return book_title, image_url, [genre.text for genre in genres]  # use named tuple
 
 
 def check_for_redirect(response: Response) -> None:
@@ -70,12 +72,16 @@ def main() -> None:
             title = get_title_params_from_book(book_url)[0]
             download_txt(url, f"{book_id}.{title}.txt")
             image_url = get_title_params_from_book(book_url)[1]
+            genres = get_title_params_from_book(book_url)[2]
             download_image(image_url)
             print(title)
+            print(genres)
             print(image_url)
+            """
             comments = download_comments(book_url, f"{book_id}_comments.txt")
             for comment in comments:
                 print(comment.find("span").text)
+            """
         except:
             continue
 if __name__ == "__main__":
