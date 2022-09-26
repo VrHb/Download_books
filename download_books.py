@@ -1,3 +1,4 @@
+import argparse
 import os
 from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
@@ -38,7 +39,9 @@ def download_image(url: str, folder: str = "images/") -> None:
         file.write(response.content)
 
 
-def download_comments(url: str, filename: str, folder: str = "comments/") -> list[str]:
+def download_comments(
+    url: str, filename: str, folder: str = "comments/"
+    ) -> list[str]:
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url)
     response.raise_for_status()
@@ -49,7 +52,7 @@ def download_comments(url: str, filename: str, folder: str = "comments/") -> lis
     with open(clear_filepath, "w") as file:
         for comment in comments:
             file.write(f"{comment.find('span').text}\n")
-    return comments
+    return [comment.find("span").text for comment in comments]
 
 
 def parse_book_page(url: str) -> ParsedPage:
@@ -78,7 +81,21 @@ def check_for_redirect(response: Response) -> None:
 
 
 def main() -> None:
-    book_ids = list(range(1, 11))
+    parser = argparse.ArgumentParser(
+        description="Программа загружает книги с сайта tululu.org"
+    )
+    parser.add_argument(
+        "--start_id",
+        default=1,
+        help="Стартовый идентификатор книги"
+    )
+    parser.add_argument(
+        "--end_id",
+        default=10,
+        help="Конечный идентификатор книги"
+    )
+    args = parser.parse_args()
+    book_ids = list(range(int(args.start_id), int(args.end_id) + 1))
     for book_id in book_ids:
         url = f"https://tululu.org/txt.php?id={book_id}"
         try:
@@ -88,14 +105,11 @@ def main() -> None:
             image_url = parse_book_page(book_url).image
             genres = parse_book_page(book_url).genres
             download_image(image_url)
+            comments = download_comments(book_url, f"{book_id}_comments.txt")
             print(title)
             print(genres)
             print(image_url)
-            """
-            comments = download_comments(book_url, f"{book_id}_comments.txt")
-            for comment in comments:
-                print(comment.find("span").text)
-            """
+            print(comments)
         except:
             continue
 
