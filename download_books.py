@@ -1,10 +1,18 @@
 import os
+from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filepath
 import requests
 from requests import Response
+
+
+class ParsedPage(NamedTuple):
+    title: str
+    image: str
+    genres: list[str]
+    author: str
 
 
 def download_txt(url: str, filename: str, folder: str = "books/") -> str:
@@ -44,18 +52,24 @@ def download_comments(url: str, filename: str, folder: str = "comments/") -> lis
     return comments
 
 
-def get_title_params_from_book(url: str) -> str:
+def parse_book_page(url: str) -> ParsedPage:
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
-    table = soup.find("body").find("table")
-    image = soup.find(class_="bookimage").find("img")["src"]
-    genres = soup.find("body").find(class_="ow_px_td").find("span", class_="d_book").find_all("a")
-    image_url = urljoin("http://tululu.org/", image) 
-    title = table.find("h1")
+    title = soup.find("body").find("table").find("h1")
     splited_title = title.text.split("::")
     book_title = splited_title[0].strip().lstrip("\xa0")
-    return book_title, image_url, [genre.text for genre in genres]  # use named tuple
+    author = splited_title[1].strip().lstrip("\xa0")
+    image = soup.find(class_="bookimage").find("img")["src"]
+    image_url = urljoin("http://tululu.org/", image) 
+    genres = soup.find("body").find(class_="ow_px_td") \
+        .find("span", class_="d_book").find_all("a")
+    return ParsedPage(
+        book_title, 
+        image_url, 
+        [genre.text for genre in genres],
+        author
+    )
 
 
 def check_for_redirect(response: Response) -> None:
@@ -69,10 +83,10 @@ def main() -> None:
         url = f"https://tululu.org/txt.php?id={book_id}"
         try:
             book_url = f"https://tululu.org/b{book_id}/"
-            title = get_title_params_from_book(book_url)[0]
+            title = parse_book_page(book_url).title
             download_txt(url, f"{book_id}.{title}.txt")
-            image_url = get_title_params_from_book(book_url)[1]
-            genres = get_title_params_from_book(book_url)[2]
+            image_url = parse_book_page(book_url).image
+            genres = parse_book_page(book_url).genres
             download_image(image_url)
             print(title)
             print(genres)
@@ -84,6 +98,8 @@ def main() -> None:
             """
         except:
             continue
+
+
 if __name__ == "__main__":
     main()
 
