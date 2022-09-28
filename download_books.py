@@ -14,6 +14,7 @@ class ParsedPage(NamedTuple):
     image: str
     genres: list[str]
     author: str
+    comments: list[str]
 
 
 def download_txt(
@@ -42,19 +43,14 @@ def download_image(url: str, folder: str = "images/") -> None:
 
 
 def download_comments(
-    url: str, filename: str, folder: str = "comments/"
-    ) -> list[str]:
+    comments: list[str], filename: str, folder: str = "comments/"
+    ) -> None:
     os.makedirs(folder, exist_ok=True)
-    response = requests.get(url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, "lxml")
-    comments = soup.find("body").find("table").find_all(class_="texts")
     filepath = os.path.join(folder, filename)
     clear_filepath = sanitize_filepath(filepath)
     with open(clear_filepath, "w") as file:
         for comment in comments:
-            file.write(f"{comment.find('span').text}\n")
-    return [comment.find("span").text for comment in comments]
+            file.write(f"{comment}\n")
 
 
 def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
@@ -68,11 +64,13 @@ def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
     image_url = urljoin(book_url, image) 
     genres = soup.find("body").find(class_="ow_px_td") \
         .find("span", class_="d_book").find_all("a")
+    comments = soup.find("body").find("table").find_all(class_="texts")
     return ParsedPage(
         book_title, 
         image_url, 
         [genre.text for genre in genres],
-        author
+        author,
+        [comment.find("span").text for comment in comments]
     )
 
 
@@ -108,11 +106,11 @@ def main() -> None:
             parsed_page = parse_book_page(book_page, book_url)
             download_txt(url, payload, f"{book_id}.{parsed_page.title}.txt")
             download_image(parsed_page.image)
-            comments = download_comments(book_url, f"{book_id}_comments.txt")
+            download_comments(parsed_page.comments, f"{book_id}_comments.txt")
             print(parsed_page.title)
             print(parsed_page.genres)
             print(parsed_page.image)
-            print(comments)
+            print(parsed_page.comments)
         except:
             continue
 
