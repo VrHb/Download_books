@@ -16,9 +16,11 @@ class ParsedPage(NamedTuple):
     author: str
 
 
-def download_txt(url: str, filename: str, folder: str = "books/") -> str:
+def download_txt(
+    url: str, params: dict, filename: str, folder: str = "books/"
+    ) -> str:
     os.makedirs(folder, exist_ok=True)
-    response = requests.get(url)
+    response = requests.get(url, params=params)
     response.raise_for_status()
     check_for_redirect(response)
     filepath = os.path.join(folder, filename)
@@ -95,13 +97,14 @@ def main() -> None:
         help="Конечный идентификатор книги"
     )
     args = parser.parse_args()
-    book_ids = list(range(int(args.start_id), int(args.end_id) + 1))
+    book_ids = range(int(args.start_id), int(args.end_id) + 1)
     for book_id in book_ids:
-        url = f"https://tululu.org/txt.php?id={book_id}"
+        payload = {"id": f"{book_id}"}
+        url = f"https://tululu.org/txt.php"
         try:
             book_url = f"https://tululu.org/b{book_id}/"
             title = parse_book_page(book_url).title
-            download_txt(url, f"{book_id}.{title}.txt")
+            download_txt(url, payload, f"{book_id}.{title}.txt")
             image_url = parse_book_page(book_url).image
             genres = parse_book_page(book_url).genres
             download_image(image_url)
