@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
 
@@ -98,10 +99,10 @@ def main() -> None:
     args = parser.parse_args()
     book_ids = range(int(args.start_id), int(args.end_id) + 1)
     for book_id in book_ids:
-        payload = {"id": f"{book_id}"}
-        url = f"https://tululu.org/txt.php"
         try:
+            url = f"https://tululu.org/txt.php"
             book_url = f"https://tululu.org/b{book_id}/"
+            payload = {"id": f"{book_id}"}
             response = requests.get(book_url)
             check_for_redirect(response)
             response.raise_for_status()
@@ -114,9 +115,10 @@ def main() -> None:
             logger.info(f"Автор: {parsed_page.author}")
             logger.info(f"Жанр: {parsed_page.genres}")
         except requests.HTTPError:
-            logger.exception("Сервер переадресовал на главную, книги с таким id нет.")
+            logger.exception("Книги с таким id нет!")
             continue
-
+        except requests.ConnectionError:
+            logger.exception("Нет соединения!")
 
 if __name__ == "__main__":
     main()
