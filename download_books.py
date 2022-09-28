@@ -1,6 +1,5 @@
 import argparse
 import os
-import time
 from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
 
