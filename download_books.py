@@ -105,15 +105,13 @@ def main() -> None:
             response = requests.get(book_url)
             response.raise_for_status()
             book_page = response.text
-            title = parse_book_page(book_page).title
-            download_txt(url, payload, f"{book_id}.{title}.txt")
-            image_url = parse_book_page(book_page, book_url).image
-            genres = parse_book_page(book_page).genres
-            download_image(image_url)
+            parsed_page = parse_book_page(book_page, book_url)
+            download_txt(url, payload, f"{book_id}.{parsed_page.title}.txt")
+            download_image(parsed_page.image)
             comments = download_comments(book_url, f"{book_id}_comments.txt")
-            print(title)
-            print(genres)
-            print(image_url)
+            print(parsed_page.title)
+            print(parsed_page.genres)
+            print(parsed_page.image)
             print(comments)
         except:
             continue
