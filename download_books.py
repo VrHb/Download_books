@@ -57,7 +57,7 @@ def download_comments(
     return [comment.find("span").text for comment in comments]
 
 
-def parse_book_page(page: str) -> ParsedPage:
+def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
     soup = BeautifulSoup(page, "lxml")
     title = soup.find("body").find("table").find("h1")
     splited_title = title.text.split("::")
@@ -65,7 +65,7 @@ def parse_book_page(page: str) -> ParsedPage:
         text.strip().lstrip("\xa0") for text in splited_title
     ]
     image = soup.find(class_="bookimage").find("img")["src"]
-    image_url = urljoin("http://tululu.org/", image) 
+    image_url = urljoin(book_url, image) 
     genres = soup.find("body").find(class_="ow_px_td") \
         .find("span", class_="d_book").find_all("a")
     return ParsedPage(
@@ -107,7 +107,7 @@ def main() -> None:
             book_page = response.text
             title = parse_book_page(book_page).title
             download_txt(url, payload, f"{book_id}.{title}.txt")
-            image_url = parse_book_page(book_page).image
+            image_url = parse_book_page(book_page, book_url).image
             genres = parse_book_page(book_page).genres
             download_image(image_url)
             comments = download_comments(book_url, f"{book_id}_comments.txt")
