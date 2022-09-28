@@ -4,10 +4,13 @@ from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
 
 from bs4 import BeautifulSoup
+from loguru import logger
 from pathvalidate import sanitize_filepath
 import requests
 from requests import Response
 
+
+logger.debug("Console log")
 
 class ParsedPage(NamedTuple):
     title: str
@@ -107,12 +110,11 @@ def main() -> None:
             download_txt(url, payload, f"{book_id}.{parsed_page.title}.txt")
             download_image(parsed_page.image)
             download_comments(parsed_page.comments, f"{book_id}_comments.txt")
-            print(parsed_page.title)
-            print(parsed_page.genres)
-            print(parsed_page.image)
-            print(parsed_page.comments)
+            logger.info(f"Название книги: {parsed_page.title}")
+            logger.info(f"Автор: {parsed_page.author}")
+            logger.info(f"Жанр: {parsed_page.genres}")
         except requests.HTTPError:
-            print("Сайт преадресовал на главную")
+            logger.exception("Сервер переадресовал на главную, книги с таким id нет.")
             continue
 
 
