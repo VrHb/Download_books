@@ -19,7 +19,7 @@ class ParsedPage(NamedTuple):
 
 def download_txt(
     url: str, params: dict, filename: str, folder: str = "books/"
-    ) -> str:
+    ) -> None:
     os.makedirs(folder, exist_ok=True)
     response = requests.get(url, params=params)
     response.raise_for_status()
@@ -28,7 +28,6 @@ def download_txt(
     clear_filepath = sanitize_filepath(filepath)
     with open(clear_filepath, "wb") as file:
         file.write(response.content)
-    return filepath
 
 
 def download_image(url: str, folder: str = "images/") -> None:
@@ -101,6 +100,7 @@ def main() -> None:
         try:
             book_url = f"https://tululu.org/b{book_id}/"
             response = requests.get(book_url)
+            check_for_redirect(response)
             response.raise_for_status()
             book_page = response.text
             parsed_page = parse_book_page(book_page, book_url)
@@ -111,7 +111,8 @@ def main() -> None:
             print(parsed_page.genres)
             print(parsed_page.image)
             print(parsed_page.comments)
-        except:
+        except requests.HTTPError:
+            print("Сайт преадресовал на главную")
             continue
 
 
