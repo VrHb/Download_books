@@ -57,14 +57,13 @@ def download_comments(
     return [comment.find("span").text for comment in comments]
 
 
-def parse_book_page(url: str) -> ParsedPage:
-    response = requests.get(url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, "lxml")
+def parse_book_page(page: str) -> ParsedPage:
+    soup = BeautifulSoup(page, "lxml")
     title = soup.find("body").find("table").find("h1")
     splited_title = title.text.split("::")
-    book_title = splited_title[0].strip().lstrip("\xa0")
-    author = splited_title[1].strip().lstrip("\xa0")
+    book_title, author = [
+        text.strip().lstrip("\xa0") for text in splited_title
+    ]
     image = soup.find(class_="bookimage").find("img")["src"]
     image_url = urljoin("http://tululu.org/", image) 
     genres = soup.find("body").find(class_="ow_px_td") \
@@ -103,10 +102,13 @@ def main() -> None:
         url = f"https://tululu.org/txt.php"
         try:
             book_url = f"https://tululu.org/b{book_id}/"
-            title = parse_book_page(book_url).title
+            response = requests.get(book_url)
+            response.raise_for_status()
+            book_page = response.text
+            title = parse_book_page(book_page).title
             download_txt(url, payload, f"{book_id}.{title}.txt")
-            image_url = parse_book_page(book_url).image
-            genres = parse_book_page(book_url).genres
+            image_url = parse_book_page(book_page).image
+            genres = parse_book_page(book_page).genres
             download_image(image_url)
             comments = download_comments(book_url, f"{book_id}_comments.txt")
             print(title)
