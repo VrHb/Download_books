@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 from typing import NamedTuple
 from urllib.parse import urljoin, urlsplit
 
@@ -118,6 +119,7 @@ def main() -> None:
             continue
         except requests.ConnectionError:
             logger.exception("Нет соединения!")
+            time.sleep(15)
 
 if __name__ == "__main__":
     main()
