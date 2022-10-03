@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 import json
 from urllib.parse import urljoin, urlsplit
@@ -21,9 +22,29 @@ def main() -> None:
         help="Стартовая страница с книгами"
     )
     parser.add_argument(
+        "--skip_img",
+        action="store_false",
+        help="Без обложек книг"
+    )
+    parser.add_argument(
+        "--skip_txt",
+        action="store_false",
+        help="Не скачивать книги"
+    )
+    parser.add_argument(
         "--end_page",
         default=701,
         help="Конечная страница с книгами"
+    )
+    parser.add_argument(
+        "--dest_folder",
+        default=".",
+        help="Директория для сохранения"
+    )
+    parser.add_argument(
+        "--json_path",
+        default=".",
+        help="Путь для сохранения json с информацией по книгам"
     )
     args = parser.parse_args()
 
@@ -51,13 +72,26 @@ def main() -> None:
                     "title": parsed_page.title,
                     "author": parsed_page.author,
                     "img_src": parsed_page.image,
-                    "book_path": f"books/{parsed_page.title}.txt",
+                    "book_path": f"{args.dest_folder}/books/{parsed_page.title}.txt",
                     "comments": parsed_page.comments,
                     "genres": parsed_page.genres
                 }
                 books_description.append(book_description)
-                download_image(parsed_page.image)
-                download_txt(url, payload, f"{parsed_page.title}.txt")
+                os.makedirs(args.dest_folder, exist_ok=True)
+                if args.skip_img:
+                    download_image(
+                        parsed_page.image,
+                        os.path.join(args.dest_folder, "images")
+                    )
+                if args.skip_txt:
+                    download_txt(
+                        url,
+                        payload,
+                        f"{parsed_page.title}.txt",
+                        os.path.join(args.dest_folder, "books") 
+                    )
+                logger.info(f"Название книги: {parsed_page.title}")
+                logger.info(f"Автор: {parsed_page.author}")
             except requests.HTTPError:
                 logger.exception("Книги с таким id нет!")
                 continue
@@ -70,9 +104,11 @@ def main() -> None:
         indent=4,
         ensure_ascii=False
     )
-    with open("books_info.json", "w") as file:
+    os.makedirs(args.json_path, exist_ok=True)
+    with open(f"{args.json_path}/books_info.json", "w") as file:
         file.write(json_books_description)
 
 
 if __name__ == "__main__":
     main()
+
