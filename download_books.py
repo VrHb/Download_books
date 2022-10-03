@@ -34,11 +34,11 @@ def download_txt(
         file.write(response.content)
 
 
-def download_image(url: str, folder: str = "images/") -> None:
+def download_image(image_path: str, folder: str = "images/") -> None:
     os.makedirs(folder, exist_ok=True)
-    response = requests.get(url)
+    response = requests.get(urljoin("https://tululu.org", image_path))
     response.raise_for_status()
-    filename = urlsplit(url).path.split("/")[-1]
+    filename = urlsplit(image_path).path.split("/")[-1]
     filepath = os.path.join(folder, filename)
     clear_filepath = sanitize_filepath(filepath)
     with open(clear_filepath, "wb") as file:
