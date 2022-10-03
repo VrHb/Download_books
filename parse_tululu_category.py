@@ -1,3 +1,4 @@
+import argparse
 import time
 import json
 from urllib.parse import urljoin, urlsplit
@@ -11,7 +12,22 @@ from download_books import download_txt, download_image, parse_book_page, \
 
 
 def main() -> None:
-    page_ids = range(5)
+    parser = argparse.ArgumentParser(
+        description="Постранично загружаем книги с сайта tululu.org"
+    )
+    parser.add_argument(
+        "--start_page",
+        default=1,
+        help="Стартовая страница с книгами"
+    )
+    parser.add_argument(
+        "--end_page",
+        default=701,
+        help="Конечная страница с книгами"
+    )
+    args = parser.parse_args()
+
+    page_ids = range(int(args.start_page), int(args.end_page))
     books_description = []
     for page_id in page_ids:
         url = f"https://tululu.org/l55/{page_id}/"
