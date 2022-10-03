@@ -30,39 +30,34 @@ python parse_tululu_category.py
 ```
 
 - Доступные аргументы:
+    * dest_folder - путь к директории с результатами парсинга
 
-* dest_folder
-путь к директории с результатами парсинга
+    пример:
+    ```
+    python parse_tululu_category.py --dest_category tululu_books/
+    ```
 
-пример:
-```
-python parse_tululu_category.py --dest_category tululu_books/
-```
+    * skip_image - без картинок
 
-* skip_image
-Не скачивать картинки
+    пример:
 
-пример:
+    ```
+    python parse_tululu_category.py --skip_image
+    ```
 
-```
-python parse_tululu_category.py --skip_image
-```
+    * skip_txt - не загружать книги
 
-* skip_txt
-Не скачивать книги
+    пример:
+    ```
+    python parse_tululu_category.py --skip_txt
+    ```
 
-пример:
-```
-python parse_tululu_category.py --skip_txt
-```
+    * json_path - путь к JSON с результатами
 
-* json_path
-путь к JSON с результатами
-
-пример:
-```
-python parse_tululu_category.py --json_path /home/user/book_json
-```
+    пример:
+    ```
+    python parse_tululu_category.py --json_path /home/user/book_json
+    ```
 
 ## Цели проекта
 
