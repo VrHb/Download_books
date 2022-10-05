@@ -76,6 +76,7 @@ def get_arguments() -> Argument:
 def get_books_on_page(url: str) -> ResultSet:
     response = requests.get(url)
     response.raise_for_status()
+    check_for_redirect(response)
     soup = BeautifulSoup(response.text, "lxml")
     selector = "body table.tabs div.bookimage"
     books_on_page = soup.select(selector)
@@ -106,35 +107,35 @@ def main() -> None:
     page_ids = range(int(arguments.start_page), int(arguments.end_page))
     books_description = []
     for page_id in page_ids:
-        url = f"https://tululu.org/l55/{page_id}/"
-        books_on_page = get_books_on_page(url)
-        for book in books_on_page:
-            try:
-                book = get_book_description(book, arguments)
-                url = f"https://tululu.org/txt.php"
-                payload = {"id": f"{book.book_id}"}    
-                books_description.append(book.description)
-                os.makedirs(arguments.dest_folder, exist_ok=True)
-                if arguments.skip_img:
-                    download_image(
-                        book.parsed.image,
-                        os.path.join(arguments.dest_folder, "images")
-                    )
-                if arguments.skip_txt:
-                    download_txt(
-                        url,
-                        payload,
-                        f"{book.parsed.title}.txt",
-                        os.path.join(arguments.dest_folder, "books") 
-                    )
-                logger.info(f"Название книги: {book.parsed.title}")
-                logger.info(f"Автор: {book.parsed.author}")
-            except requests.HTTPError:
-                logger.exception("Книги с таким id нет!")
-                continue
-            except requests.ConnectionError:
-                logger.exception("Нет соединения!")
-                time.sleep(15)
+        try:
+            url = f"https://tululu.org/l55/{page_id}/"
+            books_on_page = get_books_on_page(url)
+            for book in books_on_page:
+                    book = get_book_description(book, arguments)
+                    url = f"https://tululu.org/txt.php"
+                    payload = {"id": f"{book.book_id}"}    
+                    books_description.append(book.description)
+                    os.makedirs(arguments.dest_folder, exist_ok=True)
+                    if arguments.skip_img:
+                        download_image(
+                            book.parsed.image,
+                            os.path.join(arguments.dest_folder, "images")
+                        )
+                    if arguments.skip_txt:
+                        download_txt(
+                            url,
+                            payload,
+                            f"{book.parsed.title}.txt",
+                            os.path.join(arguments.dest_folder, "books") 
+                        )
+                    logger.info(f"Название книги: {book.parsed.title}")
+                    logger.info(f"Автор: {book.parsed.author}")
+        except requests.HTTPError:
+            logger.exception("Книги с таким id нет!")
+            continue
+        except requests.ConnectionError:
+            logger.exception("Нет соединения!")
+            time.sleep(15)
     
     json_books_description = json.dumps(
         books_description,
