@@ -91,11 +91,16 @@ def get_book_description(book: str, arguments: Argument) -> Book:
     check_for_redirect(response)
     book_page = response.text
     parsed_page = parse_book_page(book_page)
+    book_path = os.path.join(
+        arguments.dest_folder,
+        "books",
+        f"{parsed_page.title}.txt"
+    )
     book_description = {
         "title": parsed_page.title,
         "author": parsed_page.author,
         "img_src": parsed_page.image,
-        "book_path": f"{arguments.dest_folder}/books/{parsed_page.title}.txt",
+        "book_path": book_path,
         "comments": parsed_page.comments,
         "genres": parsed_page.genres
     }
@@ -111,27 +116,27 @@ def main() -> None:
             url = f"https://tululu.org/l55/{page_id}/"
             books_on_page = get_books_on_page(url)
             for book in books_on_page:
-                    book = get_book_description(book, arguments)
-                    url = f"https://tululu.org/txt.php"
-                    payload = {"id": f"{book.book_id}"}    
-                    books_description.append(book.description)
-                    os.makedirs(arguments.dest_folder, exist_ok=True)
-                    if arguments.skip_img:
-                        download_image(
-                            book.parsed.image,
-                            os.path.join(arguments.dest_folder, "images")
-                        )
-                    if arguments.skip_txt:
-                        download_txt(
-                            url,
-                            payload,
-                            f"{book.parsed.title}.txt",
-                            os.path.join(arguments.dest_folder, "books") 
-                        )
-                    logger.info(f"Название книги: {book.parsed.title}")
-                    logger.info(f"Автор: {book.parsed.author}")
+                book = get_book_description(book, arguments)
+                url = f"https://tululu.org/txt.php"
+                payload = {"id": f"{book.book_id}"}    
+                books_description.append(book.description)
+                os.makedirs(arguments.dest_folder, exist_ok=True)
+                if arguments.skip_img:
+                    download_image(
+                        book.parsed.image,
+                        os.path.join(arguments.dest_folder, "images")
+                    )
+                if arguments.skip_txt:
+                    download_txt(
+                        url,
+                        payload,
+                        f"{book.parsed.title}.txt",
+                        os.path.join(arguments.dest_folder, "books") 
+                    )
+                logger.info(f"Название книги: {book.parsed.title}")
+                logger.info(f"Автор: {book.parsed.author}")
         except requests.HTTPError:
-            logger.exception("Книги с таким id нет!")
+            logger.exception("Cтраницы или книги с таким id нет!")
             continue
         except requests.ConnectionError:
             logger.exception("Нет соединения!")
@@ -143,7 +148,8 @@ def main() -> None:
         ensure_ascii=False
     )
     os.makedirs(arguments.json_path, exist_ok=True)
-    with open(f"{arguments.json_path}/books_info.json", "w") as file:
+    json_path = os.path.join(arguments.json_path, "books_info.json")
+    with open(json_path, "w") as file:
         file.write(json_books_description)
 
 
