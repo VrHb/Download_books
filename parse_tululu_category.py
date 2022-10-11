@@ -142,15 +142,15 @@ def main() -> None:
             logger.exception("Нет соединения!")
             time.sleep(15)
     
-    json_books_description = json.dumps(
-        books_description,
-        indent=4,
-        ensure_ascii=False
-    )
     os.makedirs(arguments.json_path, exist_ok=True)
     json_path = os.path.join(arguments.json_path, "books_info.json")
-    with open(json_path, "w") as file:
-        file.write(json_books_description)
+    with open(json_path, "w") as file_path:
+        json.dump(
+            books_description,
+            file_path,
+            indent=4,
+            ensure_ascii=False
+        )
 
 
 if __name__ == "__main__":
