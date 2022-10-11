@@ -39,12 +39,12 @@ def get_arguments() -> Argument:
     )
     parser.add_argument(
         "--skip_img",
-        action="store_false",
+        action="store_true",
         help="Без обложек книг"
     )
     parser.add_argument(
         "--skip_txt",
-        action="store_false",
+        action="store_true",
         help="Не скачивать книги"
     )
     parser.add_argument(
@@ -122,16 +122,16 @@ def main() -> None:
                 books_description.append(book.description)
                 os.makedirs(arguments.dest_folder, exist_ok=True)
                 if arguments.skip_img:
-                    download_image(
-                        book.parsed.image,
-                        os.path.join(arguments.dest_folder, "images")
-                    )
-                if arguments.skip_txt:
                     download_txt(
                         url,
                         payload,
                         f"{book.parsed.title}.txt",
                         os.path.join(arguments.dest_folder, "books") 
+                    )
+                if arguments.skip_txt:
+                    download_image(
+                        book.parsed.image,
+                        os.path.join(arguments.dest_folder, "images")
                     )
                 logger.info(f"Название книги: {book.parsed.title}")
                 logger.info(f"Автор: {book.parsed.author}")
