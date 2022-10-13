@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 from typing import NamedTuple
 import json
@@ -83,8 +84,8 @@ def get_books_on_page(url: str) -> ResultSet:
     return books_on_page
 
 
-def get_book_description(book: str, arguments: Argument) -> Book:
-    book_url = urljoin("https://tululu.org", book.select_one("a")["href"])
+def get_book_description(url: str, book: str, arguments: Argument) -> Book:
+    book_url = urljoin(url, book.select_one("a")["href"])
     book_id = urlsplit(book_url).path.strip("/b")
     response = requests.get(book_url)
     response.raise_for_status()
@@ -105,7 +106,7 @@ def get_book_description(book: str, arguments: Argument) -> Book:
         "genres": parsed_page.genres
     }
     return Book(book_id, book_description, parsed_page)
-
+    
 
 def main() -> None:
     arguments = get_arguments()
@@ -114,34 +115,39 @@ def main() -> None:
     for page_id in page_ids:
         try:
             url = f"https://tululu.org/l55/{page_id}/"
-            books_on_page = get_books_on_page(url)
+            books_on_page = get_books_on_page(url)    
             for book in books_on_page:
-                book = get_book_description(book, arguments)
-                url = f"https://tululu.org/txt.php"
-                payload = {"id": f"{book.book_id}"}    
-                books_description.append(book.description)
-                os.makedirs(arguments.dest_folder, exist_ok=True)
-                if arguments.skip_img:
-                    download_txt(
-                        url,
-                        payload,
-                        f"{book.parsed.title}.txt",
-                        os.path.join(arguments.dest_folder, "books") 
-                    )
-                if arguments.skip_txt:
-                    download_image(
-                        book.parsed.image,
-                        os.path.join(arguments.dest_folder, "images")
-                    )
+                try:
+                    book = get_book_description(url, book, arguments)
+                    url = f"https://tululu.org/txt.php"
+                    payload = {"id": f"{book.book_id}"}    
+                    books_description.append(book.description)
+                    os.makedirs(arguments.dest_folder, exist_ok=True)
+                    if arguments.skip_img:
+                        download_txt(
+                            url,
+                            payload,
+                            f"{book.parsed.title}.txt",
+                            os.path.join(arguments.dest_folder, "books") 
+                        )
+                    if arguments.skip_txt:
+                        download_image(
+                            book.parsed.image,
+                            os.path.join(arguments.dest_folder, "images")
+                        )
+                except requests.HTTPError:
+                    logger.exception("Книги с таким id нет!")
+                    continue
+                except requests.ConnectionError:
+                    logger.exception("Нет сетевого соединения!")
+                    time.sleep(45)
+                logger.info("____________________________________")
                 logger.info(f"Название книги: {book.parsed.title}")
                 logger.info(f"Автор: {book.parsed.author}")
         except requests.HTTPError:
-            logger.exception("Cтраницы или книги с таким id нет!")
-            continue
+            logger.exception("Такой страницы нет!")
         except requests.ConnectionError:
-            logger.exception("Нет соединения!")
-            time.sleep(15)
-    
+            logger.exception("Нет соединения с хостом!")
     os.makedirs(arguments.json_path, exist_ok=True)
     json_path = os.path.join(arguments.json_path, "books_info.json")
     with open(json_path, "w") as file_path:
@@ -151,8 +157,7 @@ def main() -> None:
             indent=4,
             ensure_ascii=False
         )
-
-
 if __name__ == "__main__":
     main()
+      
 
