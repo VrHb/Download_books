@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 import time
 from typing import NamedTuple
 import json
@@ -15,11 +14,16 @@ from download_books import ParsedPage, download_txt, download_image, parse_book_
     check_for_redirect
 
 
+FUNCTION_MAP = {
+    "skip_img": download_image,
+    "skip_txt": download_txt
+}
+
 class Argument(NamedTuple):
     start_page: int
     end_page: int
-    skip_img: str
-    skip_txt: str
+    skip_imgs: bool
+    skip_txt: bool
     dest_folder: str
     json_path: str
 
@@ -39,7 +43,7 @@ def get_arguments() -> Argument:
         help="Стартовая страница с книгами"
     )
     parser.add_argument(
-        "--skip_img",
+        "--skip_imgs",
         action="store_true",
         help="Без обложек книг"
     )
@@ -67,7 +71,7 @@ def get_arguments() -> Argument:
     return Argument(
         start_page=args.start_page,
         end_page=args.end_page,
-        skip_img=args.skip_img,
+        skip_imgs=args.skip_imgs,
         skip_txt=args.skip_txt,
         dest_folder=args.dest_folder,
         json_path=args.json_path
@@ -110,6 +114,7 @@ def get_book_description(url: str, book: str, arguments: Argument) -> Book:
 
 def main() -> None:
     arguments = get_arguments()
+    logger.info(arguments.skip_txt)
     page_ids = range(int(arguments.start_page), int(arguments.end_page))
     books_description = []
     for page_id in page_ids:
@@ -119,11 +124,11 @@ def main() -> None:
             for book in books_on_page:
                 try:
                     book = get_book_description(url, book, arguments)
-                    url = f"https://tululu.org/txt.php"
+                    url = "https://tululu.org/txt.php"
                     payload = {"id": f"{book.book_id}"}    
                     books_description.append(book.description)
                     os.makedirs(arguments.dest_folder, exist_ok=True)
-                    if arguments.skip_img:
+                    if arguments.skip_imgs:
                         download_txt(
                             url,
                             payload,
@@ -135,8 +140,19 @@ def main() -> None:
                             book.parsed.image,
                             os.path.join(arguments.dest_folder, "images")
                         )
+                    else:
+                        download_txt(
+                            url,
+                            payload,
+                            f"{book.parsed.title}.txt",
+                            os.path.join(arguments.dest_folder, "books") 
+                        )
+                        download_image(
+                            book.parsed.image,
+                            os.path.join(arguments.dest_folder, "images")
+                        )
                 except requests.HTTPError:
-                    logger.exception("Книги с таким id нет!")
+                    logger.error("Книги с таким id нет!")
                     continue
                 except requests.ConnectionError:
                     logger.exception("Нет сетевого соединения!")
