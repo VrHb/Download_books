@@ -135,7 +135,7 @@ def main() -> None:
                             f"{book.parsed.title}.txt",
                             os.path.join(arguments.dest_folder, "books") 
                         )
-                    if arguments.skip_txt:
+                    elif arguments.skip_txt:
                         download_image(
                             book.parsed.image,
                             os.path.join(arguments.dest_folder, "images")
