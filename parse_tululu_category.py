@@ -128,28 +128,17 @@ def main() -> None:
                     payload = {"id": f"{book.book_id}"}    
                     books_description.append(book.description)
                     os.makedirs(arguments.dest_folder, exist_ok=True)
-                    if arguments.skip_imgs:
+                    if not arguments.skip_imgs:
+                        download_image(
+                            book.parsed.image,
+                            os.path.join(arguments.dest_folder, "images")
+                        )
+                    if not arguments.skip_txt:
                         download_txt(
                             url,
                             payload,
                             f"{book.parsed.title}.txt",
                             os.path.join(arguments.dest_folder, "books") 
-                        )
-                    elif arguments.skip_txt:
-                        download_image(
-                            book.parsed.image,
-                            os.path.join(arguments.dest_folder, "images")
-                        )
-                    else:
-                        download_txt(
-                            url,
-                            payload,
-                            f"{book.parsed.title}.txt",
-                            os.path.join(arguments.dest_folder, "books") 
-                        )
-                        download_image(
-                            book.parsed.image,
-                            os.path.join(arguments.dest_folder, "images")
                         )
                 except requests.HTTPError:
                     logger.error("Книги с таким id нет!")
