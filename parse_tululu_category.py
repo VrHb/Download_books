@@ -114,7 +114,6 @@ def get_book_description(url: str, book: str, arguments: Argument) -> Book:
 
 def main() -> None:
     arguments = get_arguments()
-    logger.info(arguments.skip_txt)
     page_ids = range(int(arguments.start_page), int(arguments.end_page))
     books_description = []
     for page_id in page_ids:
