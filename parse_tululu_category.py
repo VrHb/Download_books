@@ -14,11 +14,6 @@ from download_books import ParsedPage, download_txt, download_image, parse_book_
     check_for_redirect
 
 
-FUNCTION_MAP = {
-    "skip_img": download_image,
-    "skip_txt": download_txt
-}
-
 class Argument(NamedTuple):
     start_page: int
     end_page: int
@@ -104,7 +99,7 @@ def get_book_description(url: str, book: str, arguments: Argument) -> Book:
     book_description = {
         "title": parsed_page.title,
         "author": parsed_page.author,
-        "img_src": parsed_page.image,
+        "img_src": os.path.join("images", parsed_page.image.split("/")[2]),
         "book_path": book_path,
         "comments": parsed_page.comments,
         "genres": parsed_page.genres
