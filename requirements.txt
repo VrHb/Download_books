@@ -3,3 +3,5 @@ lxml==4.9.1
 pathvalidate==2.5.2
 requests==2.28.1
 loguru==0.6.0
+more_itertools==9.0.0
+Jinja2==3.1.2
