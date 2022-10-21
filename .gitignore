@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Index file
+index.html
+
 # Project
 books/
 comments/
