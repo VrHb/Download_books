@@ -1,7 +1,7 @@
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler, SimpleHTTPRequestHandler
 
-
+from more_itertools import chunked
 from loguru import logger
 from livereload import Server, shell
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -15,6 +15,7 @@ def get_bookinfo_from_json(json_file: str) -> dict[str]:
 
 def main():
     books = get_bookinfo_from_json("books_info.json")
+    books = list(chunked(books, 2))
 
     env = Environment(
         loader=FileSystemLoader("."),
