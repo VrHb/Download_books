@@ -3,13 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Index file
-index.html
-pages/
 # Project
-books/
-comments/
-images/
 *.json
 
 
