@@ -14,16 +14,19 @@ def get_bookinfo_from_json(json_file: str) -> dict:
     return book_description
 
 
-def render_site(books_pages):
+def render_pages(books_pages):
     env = Environment(
         loader=FileSystemLoader("."),
         autoescape=select_autoescape(["html", "xml"])
     )
     template = env.get_template("template.html")
-    for page_index, books_page in enumerate(books_pages):
-        path_file = os.path.join("pages", f"index{page_index}.html")
+    for page_num, books_on_page in enumerate(books_pages, 1):
+        path_file = os.path.join("pages", f"index{page_num}.html")
+        sum_pages = range(1, len(books_pages) + 1)
         rendered_page = template.render(
-            books=books_page 
+            books=books_on_page,
+            pages=sum_pages,
+            page_num=page_num
         )
         with open(path_file, "w", encoding="utf8") as file:
             file.write(rendered_page)
@@ -34,7 +37,7 @@ def main():
     books = list(chunked(books, 2))
     books_pages = list(chunked(books, 10))
     os.makedirs("pages", exist_ok=True)
-    render_site(books_pages)
+    render_pages(books_pages)
     
 
 if __name__ == "__main__":
