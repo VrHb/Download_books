@@ -22,10 +22,10 @@ def render_pages(books_pages):
     template = env.get_template("template.html")
     for page_num, books_on_page in enumerate(books_pages, 1):
         path_file = os.path.join("pages", f"index{page_num}.html")
-        sum_pages = range(1, len(books_pages) + 1)
+        pages_range = range(1, len(books_pages) + 1)
         rendered_page = template.render(
             books=books_on_page,
-            pages=sum_pages,
+            pages=pages_range,
             page_num=page_num
         )
         with open(path_file, "w", encoding="utf8") as file:
@@ -34,8 +34,10 @@ def render_pages(books_pages):
 
 def main():
     books = get_bookinfo_from_json("books_info.json")
-    books = list(chunked(books, 2))
-    books_pages = list(chunked(books, 10))
+    num_columns = 2
+    column_length = 10
+    books_columns = list(chunked(books, num_columns))
+    books_pages = list(chunked(books_columns, column_length))
     os.makedirs("pages", exist_ok=True)
     render_pages(books_pages)
     
