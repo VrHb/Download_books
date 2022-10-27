@@ -69,7 +69,7 @@ def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
         .find("span", class_="d_book").find_all("a")
     comments = soup.find("body").find("table").find_all(class_="texts")
     return ParsedPage(
-        book_title, 
+        book_title.replace(":", ""), 
         image_url, 
         [genre.text for genre in genres],
         author,
