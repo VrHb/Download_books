@@ -3,7 +3,6 @@ import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler, SimpleHTTPRequestHandler
 
 from more_itertools import chunked
-from loguru import logger
 from livereload import Server, shell
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -34,9 +33,9 @@ def render_pages(books_pages):
 
 def main():
     books = get_bookinfo_from_json("books_info.json")
-    num_columns = 2
+    columns_num = 2
     column_length = 10
-    books_columns = list(chunked(books, num_columns))
+    books_columns = list(chunked(books, columns_num))
     books_pages = list(chunked(books_columns, column_length))
     os.makedirs("pages", exist_ok=True)
     render_pages(books_pages)
