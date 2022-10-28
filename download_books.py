@@ -29,7 +29,7 @@ def download_txt(
     response = requests.get(url, params=params)
     response.raise_for_status()
     check_for_redirect(response)
-    filepath = os.path.join(folder, filename)
+    filepath = os.path.join(folder, filename.replace("...", ""))
     clear_filepath = sanitize_filepath(filepath)
     with open(clear_filepath, "wb") as file:
         file.write(response.content)
@@ -71,7 +71,7 @@ def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
         .find("span", class_="d_book").find_all("a")
     comments = soup.find("body").find("table").find_all(class_="texts")
     return ParsedPage(
-        book_title.replace(":", ""), 
+        book_title, 
         image_url, 
         [genre.text for genre in genres],
         author,

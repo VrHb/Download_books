@@ -93,14 +93,14 @@ def get_book_description(url: str, book: str, arguments: Argument) -> Book:
     parsed_page = parse_book_page(book_page)
     book_path = os.path.join(
         arguments.dest_folder,
-        "books",
+        "../books",
         f"{parsed_page.title}.txt"
     )
     book_description = {
         "title": parsed_page.title,
         "author": parsed_page.author,
-        "img_src": os.path.join("images", parsed_page.image.split("/")[2]),
-        "book_path": book_path,
+        "img_src": os.path.join("../images", parsed_page.image.split("/")[2]),
+        "book_path": book_path.replace("...","").replace(":",""),
         "comments": parsed_page.comments,
         "genres": parsed_page.genres
     }
