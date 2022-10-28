@@ -19,6 +19,7 @@ class ParsedPage(NamedTuple):
     genres: list[str]
     author: str
     comments: list[str]
+    dowload_link: bool
 
 
 def download_txt(
@@ -64,7 +65,8 @@ def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
         text.strip().lstrip("\xa0") for text in splited_title
     ]
     image = soup.find(class_="bookimage").find("img")["src"]
-    image_url = urljoin(book_url, image) 
+    image_url = urljoin(book_url, image)
+    download_txt_link = soup.select("a[href*='txt.php?']")
     genres = soup.find("body").find(class_="ow_px_td") \
         .find("span", class_="d_book").find_all("a")
     comments = soup.find("body").find("table").find_all(class_="texts")
@@ -73,7 +75,8 @@ def parse_book_page(page: str, book_url: str | None = None) -> ParsedPage:
         image_url, 
         [genre.text for genre in genres],
         author,
-        [comment.find("span").text for comment in comments]
+        [comment.find("span").text for comment in comments],
+        bool(download_txt_link)
     )
 
 

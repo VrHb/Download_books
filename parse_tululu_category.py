@@ -120,7 +120,8 @@ def main() -> None:
                     book = get_book_description(url, book, arguments)
                     url = "https://tululu.org/txt.php"
                     payload = {"id": f"{book.book_id}"}    
-                    books_description.append(book.description)
+                    if book.parsed.dowload_link:
+                        books_description.append(book.description)
                     os.makedirs(arguments.dest_folder, exist_ok=True)
                     if not arguments.skip_imgs:
                         download_image(
@@ -148,6 +149,7 @@ def main() -> None:
         except requests.ConnectionError:
             logger.exception("Нет соединения с хостом!")
     os.makedirs(arguments.json_path, exist_ok=True)
+    logger.info(len(books_description))
     json_path = os.path.join(arguments.json_path, "books_info.json")
     with open(json_path, "w") as file_path:
         json.dump(
