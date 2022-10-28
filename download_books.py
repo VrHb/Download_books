@@ -19,7 +19,7 @@ class ParsedPage(NamedTuple):
     genres: list[str]
     author: str
     comments: list[str]
-    dowload_link: bool
+    download_link: bool
 
 
 def download_txt(

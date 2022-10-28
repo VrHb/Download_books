@@ -120,7 +120,7 @@ def main() -> None:
                     book = get_book_description(url, book, arguments)
                     url = "https://tululu.org/txt.php"
                     payload = {"id": f"{book.book_id}"}    
-                    if book.parsed.dowload_link:
+                    if book.parsed.download_link:
                         books_description.append(book.description)
                     os.makedirs(arguments.dest_folder, exist_ok=True)
                     if not arguments.skip_imgs:
