@@ -4,7 +4,7 @@
 
 ## Сайт проекта
 
-Сайт проекта с книгами доступен [тут](https://vrhb.github.io/Download_books/pages/index1.html).
+Сайт проекта с книгами доступен [тут](https://vrhb.github.io/tululu-book-parser/pages/index1.html).
 
 ## Запуск
 
