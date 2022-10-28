@@ -20,14 +20,14 @@ def render_pages(books_pages):
     )
     template = env.get_template("template.html")
     for page_num, books_on_page in enumerate(books_pages, 1):
-        path_file = os.path.join("pages", f"index{page_num}.html")
+        file_path = os.path.join("pages", f"index{page_num}.html")
         pages_range = range(1, len(books_pages) + 1)
         rendered_page = template.render(
             books=books_on_page,
             pages=pages_range,
             page_num=page_num
         )
-        with open(path_file, "w", encoding="utf8") as file:
+        with open(file_path, "w", encoding="utf8") as file:
             file.write(rendered_page)
 
 
